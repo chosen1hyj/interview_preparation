@@ -15,83 +15,94 @@
 示例：
 ```
 输入：
-board = [
-    ["5","3",".",".","7",".",".",".","."],
-    ["6",".",".","1","9","5",".",".","."],
-    [".","9","8",".",".",".",".","6","."],
-    ["8",".",".",".","6",".",".",".","3"],
-    ["4",".",".","8",".","3",".",".","1"],
-    ["7",".",".",".","2",".",".",".","6"],
-    [".","6",".",".",".",".","2","8","."],
-    [".",".",".","4","1","9",".",".","5"],
-    [".",".",".",".","8",".",".","7","9"]
+[
+  ["5","3",".",".","7",".",".",".","."],
+  ["6",".",".","1","9","5",".",".","."],
+  [".","9","8",".",".",".",".","6","."],
+  ["8",".",".",".","6",".",".",".","3"],
+  ["4",".",".","8",".","3",".",".","1"],
+  ["7",".",".",".","2",".",".",".","6"],
+  [".","6",".",".",".",".","2","8","."],
+  [".",".",".","4","1","9",".",".","5"],
+  [".",".",".",".","8",".",".","7","9"]
 ]
 
-输出：修改输入的 board 使其成为有效数独解
+输出：
+[
+  ["5","3","4","6","7","8","9","1","2"],
+  ["6","7","2","1","9","5","3","4","8"],
+  ["1","9","8","3","4","2","5","6","7"],
+  ["8","5","9","7","6","1","4","2","3"],
+  ["4","2","6","8","5","3","7","9","1"],
+  ["7","1","3","9","2","4","8","5","6"],
+  ["9","6","1","5","3","7","2","8","4"],
+  ["2","8","7","4","1","9","6","3","5"],
+  ["3","4","5","2","8","6","1","7","9"]
+]
 ```
 
 ## 解法：回溯算法
 
 ### 思路
-1. 使用回溯算法尝试所有可能数字
-2. 维护行、列和块的状态
-3. 剪枝优化搜索空间
+1. 遍历每个空格尝试填入数字
+2. 使用三个布尔数组记录行列和小宫格的使用情况
+3. 回溯寻找可行解
 
 ```java
 class Solution {
     public void solveSudoku(char[][] board) {
-        boolean[][] rows = new boolean[9][9];
-        boolean[][] cols = new boolean[9][9];
-        boolean[][][] blocks = new boolean[3][3][9];
+        boolean[][] rowUsed = new boolean[9][10];
+        boolean[][] colUsed = new boolean[9][10];
+        boolean[][][] boxUsed = new boolean[3][3][10];
         
-        // 初始化状态
+        // 初始化已使用标记
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
                 if (board[i][j] != '.') {
-                    int num = board[i][j] - '1';
-                    rows[i][num] = true;
-                    cols[j][num] = true;
-                    blocks[i/3][j/3][num] = true;
+                    int num = board[i][j] - '0';
+                    rowUsed[i][num] = true;
+                    colUsed[j][num] = true;
+                    boxUsed[i/3][j/3][num] = true;
                 }
             }
         }
         
-        backtrack(board, rows, cols, blocks, 0, 0);
+        backtrack(board, rowUsed, colUsed, boxUsed, 0, 0);
     }
     
-    private boolean backtrack(char[][] board, boolean[][] rows,
-                               boolean[][] cols, boolean[][][] blocks,
+    private boolean backtrack(char[][] board, boolean[][] rowUsed, 
+                               boolean[][] colUsed, boolean[][][] boxUsed,
                                int row, int col) {
-        // 找到下一个空位置
+        // 找到下一个空格
         while (row < 9 && board[row][col] != '.') {
-            col++;
-            if (col == 9) {
-                col = 0;
-                row++;
-            }
+            row = col == 8 ? row + 1 : row;
+            col = col == 8 ? 0 : col + 1;
         }
         
-        if (row == 9) return true; // 找到解
+        // 如果已经遍历完所有格子
+        if (row == 9) return true;
         
-        for (int num = 0; num < 9; num++) {
-            if (!rows[row][num] && !cols[col][num] && 
-                !blocks[row/3][col/3][num]) {
+        // 尝试填入数字
+        for (int num = 1; num <= 9; num++) {
+            if (!rowUsed[row][num] && !colUsed[col][num] &&
+                !boxUsed[row/3][col/3][num]) {
                 
-                // 做出选择
-                board[row][col] = (char)(num + '1');
-                rows[row][num] = true;
-                cols[col][num] = true;
-                blocks[row/3][col/3][num] = true;
+                // 做选择
+                board[row][col] = (char)(num + '0');
+                rowUsed[row][num] = true;
+                colUsed[col][num] = true;
+                boxUsed[row/3][col/3][num] = true;
                 
-                if (backtrack(board, rows, cols, blocks, row, col)) {
+                // 进入下一层决策树
+                if (backtrack(board, rowUsed, colUsed, boxUsed, row, col)) {
                     return true;
                 }
                 
                 // 撤销选择
                 board[row][col] = '.';
-                rows[row][num] = false;
-                cols[col][num] = false;
-                blocks[row/3][col/3][num] = false;
+                rowUsed[row][num] = false;
+                colUsed[col][num] = false;
+                boxUsed[row/3][col/3][num] = false;
             }
         }
         
@@ -101,37 +112,33 @@ class Solution {
 ```
 
 ### 复杂度分析
-- 时间复杂度：O(9^(n*n))，最坏情况下的递归深度
-- 空间复杂度：O(n^2)，状态数组的空间使用
+- 时间复杂度：O(9^(n²))，其中n是数独边长
+- 空间复杂度：O(n²)，辅助数组和递归栈空间
 
 ## 解题技巧
 
-### 1. 状态维护
+### 1. 状态标记
 ```java
-// 使用布尔数组维护状态
-boolean[][] rows = new boolean[9][9];
-boolean[][] cols = new boolean[9][9];
-boolean[][][] blocks = new boolean[3][3][9];
+// 三个维度的状态标记
+boolean[][] rowUsed = new boolean[9][10];
+boolean[][] colUsed = new boolean[9][10];
+boolean[][][] boxUsed = new boolean[3][3][10];
 ```
 
-### 2. 位置遍历
+### 2. 空格查找
 ```java
-// 寻找下一个空位置
+// 快速定位下一个空格
 while (row < 9 && board[row][col] != '.') {
-    col++;
-    if (col == 9) {
-        col = 0;
-        row++;
-    }
+    row = col == 8 ? row + 1 : row;
+    col = col == 8 ? 0 : col + 1;
 }
 ```
 
-### 3. 提前返回
+### 3. 可行性判断
 ```java
-// 找到解立即返回
-if (backtrack(...)) {
-    return true;
-}
+// 综合判断三个条件
+if (!rowUsed[row][num] && !colUsed[col][num] &&
+    !boxUsed[row/3][col/3][num]) { ... }
 ```
 
 ## 相关题目
@@ -142,34 +149,34 @@ if (backtrack(...)) {
 ## 延伸思考
 
 ### 1. 变种问题
-- 不规则形状的数独？
-- 更大尺寸的数独？
-- 添加额外约束条件？
+- 不规则数独？
+- 更大尺寸数独？
+- 特殊约束条件？
 
 ### 2. 优化方向
-- 启发式搜索
 - 舞蹈链算法
+- 启发式搜索
 - 并行计算
 
 ### 3. 实际应用
-- 游戏AI
-- 排班系统
-- 资源分配
-- 图着色问题
+- 游戏开发
+- 约束满足问题
+- 排列组合
+- 人工智能
 
 ## 面试技巧
 
 ### 1. 解题步骤
-1. 确定递归函数定义
-2. 设计状态表示
-3. 处理约束条件
-4. 实现提前返回
+1. 确定状态表示
+2. 设计可行性判断
+3. 实现回溯逻辑
+4. 收集最终结果
 
 ### 2. 代码实现
-- 合理的状态维护
-- 有效的剪枝优化
-- 正确的位置遍历
-- 完善的边界处理
+- 完善的边界检查
+- 正确的状态维护
+- 清晰的搜索逻辑
+- 准确的结果统计
 
 ### 3. 复杂度分析
 - 时间复杂度证明
@@ -178,45 +185,49 @@ if (backtrack(...)) {
 
 ## 常见错误
 
-### 1. 状态维护
+### 1. 边界条件
 ```java
-// 错误：忘记更新状态
-board[row][col] = (char)(num + '1');
-// 缺少更新其他状态数组
+// 错误：越界访问
+for (int num = 0; num <= 9; num++) { ... }
+// 应该从1开始
+for (int num = 1; num <= 9; num++) { ... }
 ```
 
-### 2. 位置遍历
+### 2. 状态恢复
 ```java
-// 错误：没有正确处理换行
-if (col == 9) {
-    col = 0;
-    row++;  // 忘记增加行号
-}
-```
-
-### 3. 回溯操作
-```java
-// 错误：忘记撤销选择
+// 错误：遗漏撤销操作
+board[row][col] = (char)(num + '0');
+rowUsed[row][num] = true;
+backtrack(...);
+// 缺少撤销
 board[row][col] = '.';
-// 缺少恢复其他状态
+rowUsed[row][num] = false;
+```
+
+### 3. 小宫格计算
+```java
+// 错误：错误的小宫格索引
+boxUsed[row][col][num] = true;
+// 应该除以3取整
+boxUsed[row/3][col/3][num] = true;
 ```
 
 ## 总结
 
 ### 1. 回溯要点
-- 明确递归定义
-- 维护多种状态
-- 处理约束条件
-- 实现提前返回
+- 明确状态表示
+- 正确维护状态
+- 完整的撤销操作
+- 处理边界情况
 
 ### 2. 优化方向
-- 启发式搜索
 - 舞蹈链算法
-- 并行计算
-- 状态压缩
+- 启发式搜索
+- BFS替代方案
+- 空间优化
 
 ### 3. 技能提升
-- 复杂状态管理
-- 约束处理能力
-- 优化意识
+- 回溯思维
+- 状态管理意识
+- 优化能力
 - 代码实现
