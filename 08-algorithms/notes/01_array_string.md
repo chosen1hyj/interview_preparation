@@ -265,8 +265,28 @@ public int[] computeLPS(String pattern) {
 
 public int kmpSearch(String text, String pattern) {
     int[] lps = computeLPS(pattern);
+    }
+    
+    // 主搜索逻辑
+    int i = 0, j = 0;
+    while (i < text.length()) {
+        if (pattern.charAt(j) == text.charAt(i)) {
+            i++;
+            j++;
+        }
+        if (j == pattern.length()) {
+            return i - j; // 匹配成功
+        } else if (i < text.length() && pattern.charAt(j) != text.charAt(i)) {
+            if (j != 0)
+                j = lps[j-1];
+            else
+                i++;
+        }
+    }
+    return -1; // 匹配失败
+}
 
-### 1. 常见优化方向
+## 1. 常见优化方向
 - 使用额外空间换取时间效率
 - 原地修改数组
 - 使用排序简化问题
@@ -277,7 +297,8 @@ public int kmpSearch(String text, String pattern) {
 - 考虑边界情况
 - 寻找问题的对称性
 - 利用数学性质
-### 典型例题
+
+## 典型例题
 
 #### LeetCode 1 - 两数之和 (简单)
 - 哈希表法
