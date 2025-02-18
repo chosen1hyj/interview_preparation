@@ -210,7 +210,34 @@ private TreeNode findMin(TreeNode node) {
 
 ## 常见问题类型
 
-### 1. 遍历问题
+### 1. 最近公共祖先（LCA）
+
+#### 定义
+- 找到两个节点p和q的最低共同祖先
+- 可能是节点本身
+
+#### 解题思路
+```java
+public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+    if (root == null || root == p || root == q) return root;
+    
+    TreeNode left = lowestCommonAncestor(root.left, p, q);
+    TreeNode right = lowestCommonAncestor(root.right, p, q);
+    
+    if (left != null && right != null) return root;
+    return left != null ? left : right;
+}
+```
+
+- 时间复杂度：O(N)，每个节点访问一次
+- 空间复杂度：O(H)，递归栈深度为树的高度
+
+#### 注意事项
+- 处理节点不存在的情况
+- 考虑p和q相同的情况
+- 特殊情况：p或q本身就是LCA
+
+### 2. 遍历问题
 - 各种遍历方式的实现
 - 遍历序列的转换
 - 特定遍历要求
@@ -221,67 +248,304 @@ private TreeNode findMin(TreeNode node) {
 - 特定路径查找
 
 ### 3. 结构判断
+
+#### 树的高度计算
+```java
+public int maxDepth(TreeNode root) {
+    if (root == null) return 0;
+    return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
+}
+```
+- 时间复杂度：O(N)
+- 空间复杂度：O(H)
+
+#### 对称性判断
+```java
+public boolean isSymmetric(TreeNode root) {
+    return isMirror(root, root);
+}
+
+private boolean isMirror(TreeNode t1, TreeNode t2) {
+    if (t1 == null && t2 == null) return true;
+    if (t1 == null || t2 == null) return false;
+    return (t1.val == t2.val) 
+        && isMirror(t1.left, t2.right)
+        && isMirror(t1.right, t2.left);
+}
+```
+- 时间复杂度：O(N)
+- 空间复杂度：O(H)
+
+#### 平衡性检查
+```java
+public boolean isBalanced(TreeNode root) {
+    return checkHeight(root) != -1;
+}
+
+private int checkHeight(TreeNode node) {
+    if (node == null) return 0;
+    
+    int leftHeight = checkHeight(node.left);
+    if (leftHeight == -1) return -1;
+    
+    int rightHeight = checkHeight(node.right);
+    if (rightHeight == -1) return -1;
+    
+    if (Math.abs(leftHeight - rightHeight) > 1) return -1;
+    return Math.max(leftHeight, rightHeight) + 1;
+}
+```
+- 时间复杂度：O(N)
+- 空间复杂度：O(H)
+
 - 对称性判断
 - 平衡性检查
 - 相同树判断
 
-### 4. 修改结构
+### 4. 路径和问题
+
+#### 定义
+- 判断是否存在从根节点到叶节点的路径，其节点值之和等于给定目标
+
+#### 解题思路
+```java
+public boolean hasPathSum(TreeNode root, int targetSum) {
+    if (root == null) return false;
+    
+    // 到达叶子节点时检查路径和
+    if (root.left == null && root.right == null) {
+        return targetSum == root.val;
+    }
+    
+    return hasPathSum(root.left, targetSum - root.val) 
+        || hasPathSum(root.right, targetSum - root.val);
+}
+```
+- 时间复杂度：O(N)
+- 空间复杂度：O(H)
+
+#### 注意事项
+- 处理空树的情况
+- 考虑负数节点值
+- 特殊情况：单节点树
+
+### 5. 序列化与反序列化
+
+#### 前序遍历方式
+```java
+// 序列化
+public String serialize(TreeNode root) {
+    StringBuilder sb = new StringBuilder();
+    serializeHelper(root, sb);
+    return sb.toString();
+}
+
+private void serializeHelper(TreeNode node, StringBuilder sb) {
+    if (node == null) {
+        sb.append("#,");
+        return;
+    }
+    
+    sb.append(node.val).append(",");
+    serializeHelper(node.left, sb);
+    serializeHelper(node.right, sb);
+}
+
+// 反序列化
+public TreeNode deserialize(String data) {
+    Queue<String> nodes = new LinkedList<>(Arrays.asList(data.split(",")));
+    return deserializeHelper(nodes);
+}
+
+private TreeNode deserializeHelper(Queue<String> nodes) {
+    String val = nodes.poll();
+    if (val.equals("#")) return null;
+    
+    TreeNode node = new TreeNode(Integer.valueOf(val));
+    node.left = deserializeHelper(nodes);
+    node.right = deserializeHelper(nodes);
+    return node;
+}
+```
+
+- 时间复杂度：O(N)
+- 空间复杂度：O(N)
+
+#### 注意事项
+- 空节点的表示
+- 分隔符的选择
+- 数据格式的一致性
+
+### 6. 修改结构
 - 翻转/镜像
 - 合并树
 - 修剪树
 
+### 边界条件处理
+
+1. 空树检查
+```java
+if (root == null) {
+    // 根据题目要求返回适当值
+    return ...;
+}
+```
+
+2. 单节点树处理
+- 特殊情况：只有一个根节点
+```java
+if (root.left == null && root.right == null) {
+    // 处理单节点树的情况
+}
+```
+
+3. 负数节点值
+- 在路径和问题中需要特别注意负数节点
+```java
+// 考虑负数路径和
+if (currentSum < 0) {
+    // 特殊处理
+}
+```
+
+4. 不平衡树
+- 左右子树高度差较大时的处理
+```java
+int leftHeight = getHeight(root.left);
+int rightHeight = getHeight(root.right);
+
+if (Math.abs(leftHeight - rightHeight) > 1) {
+    // 处理不平衡情况
+}
+```
+
+### 优化方向
+
+1. 递归优化
+- 尾递归优化
+```java
+public int maxDepth(TreeNode root, int currentDepth) {
+    if (root == null) return currentDepth;
+    return Math.max(maxDepth(root.left, currentDepth + 1),
+                    maxDepth(root.right, currentDepth + 1));
+}
+```
+
+2. 迭代替代递归
+- 使用栈模拟递归
+```java
+public int maxDepth(TreeNode root) {
+    if (root == null) return 0;
+    
+    Stack<Pair<TreeNode, Integer>> stack = new Stack<>();
+    stack.push(new Pair<>(root, 1));
+    int maxDepth = 0;
+    
+    while (!stack.isEmpty()) {
+        Pair<TreeNode, Integer> current = stack.pop();
+        TreeNode node = current.getKey();
+        int depth = current.getValue();
+        
+        maxDepth = Math.max(maxDepth, depth);
+        
+        if (node.left != null) {
+            stack.push(new Pair<>(node.left, depth + 1));
+        }
+        if (node.right != null) {
+            stack.push(new Pair<>(node.right, depth + 1));
+        }
+    }
+    
+    return maxDepth;
+}
+```
+
+3. 缓存计算结果
+- 记忆化搜索
+```java
+Map<TreeNode, Integer> cache = new HashMap<>();
+
+public int getHeight(TreeNode node) {
+    if (node == null) return 0;
+    if (cache.containsKey(node)) return cache.get(node);
+    
+    int height = Math.max(getHeight(node.left), getHeight(node.right)) + 1;
+    cache.put(node, height);
+    return height;
+}
+```
+
+### 常见错误总结
+
+1. 忘记处理空树
+```java
+// 错误示例
+public int maxDepth(TreeNode root) {
+    return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
+}
+
+// 正确处理
+public int maxDepth(TreeNode root) {
+    if (root == null) return 0; // 必须处理空树
+    return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
+}
+```
+
+2. 返回值类型错误
+- 注意返回值类型是否匹配
+```java
+// 错误示例
+public boolean isValidBST(TreeNode root) {
+    return validate(root, Integer.MIN_VALUE, Integer.MAX_VALUE);
+}
+
+// 正确处理
+public boolean isValidBST(TreeNode root) {
+    return validate(root, Long.MIN_VALUE, Long.MAX_VALUE);
+}
+```
+
+3. 溢出问题
+- 使用long类型避免整数溢出
+```java
+// 错误示例
+public boolean isValidBST(TreeNode root, int min, int max) {
+    // 可能发生溢出
+}
+
+// 正确处理
+public boolean isValidBST(TreeNode root, long min, long max) {
+    // 使用long类型
+}
+```
+
+4. 忘记更新全局变量
+```java
+// 错误示例
+private int maxSum = Integer.MIN_VALUE;
+
+public int maxPathSum(TreeNode root) {
+    helper(root);
+    return maxSum; // 可能忘记更新maxSum
+}
+
+// 正确处理
+private int maxSum = Integer.MIN_VALUE;
+
+public int maxPathSum(TreeNode root) {
+    helper(root);
+    return maxSum;
+}
+
+private int helper(TreeNode node) {
+    if (node == null) return 0;
+    
+    int left = Math.max(0, helper(node.left));
+    int right = Math.max(0, helper(node.right));
+    
+    maxSum = Math.max(maxSum, left + right + node.val); // 正确更新
+    return Math.max(left, right) + node.val;
+}
+```
+
 ## 解题技巧
-
-### 1. 递归处理
-- 明确递归函数的作用
-- 确定基本情况
-- 考虑返回值的处理
-
-### 2. 辅助数据结构
-- 使用栈实现迭代
-- 使用队列进行层序遍历
-- 使用Map存储额外信息
-
-### 3. 树的性质利用
-- BST的有序性
-- 完全二叉树的性质
-- 平衡树的特点
-
-## 常见陷阱和注意事项
-
-### 1. 边界情况
-- 空树的处理
-- 单节点树
-- 满二叉树/完全二叉树
-
-### 2. 递归陷阱
-- 栈溢出
-- 重复计算
-- 返回值处理
-
-### 3. 性能考虑
-- 时间复杂度
-- 空间复杂度
-- 递归转迭代
-
-## 实战建议
-
-### 1. 刷题顺序
-1. 基本遍历（前序、中序、后序）
-2. 层序遍历
-3. 简单路径问题
-4. 树的修改问题
-5. 复杂结构问题
-
-### 2. 解题步骤
-1. 分析树的特征
-2. 选择合适的遍历方式
-3. 设计递归函数
-4. 处理边界情况
-5. 优化解法
-
-### 3. 调试技巧
-1. 画图理解
-2. 小规模测试
-3. 打印中间结果
-4. 检查递归出口
