@@ -18,9 +18,12 @@ interview_preparation/
 ├── 03-distributed-system/ # 分布式系统
 │   ├── 分布式事务
 │   ├── 分布式缓存
+│   ├── 消息队列（MQ）
 │   └── 微服务架构
 ├── 04-database/          # 数据库
 │   ├── MySQL优化
+│   ├── Redis应用
+│   ├── 全文搜索引擎（Elasticsearch）
 │   ├── Redis应用
 │   └── 数据库设计
 ├── 05-high-concurrency/  # 高并发
