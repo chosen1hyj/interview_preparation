@@ -277,6 +277,89 @@ public int kmpSearch(String text, String pattern) {
 - 考虑边界情况
 - 寻找问题的对称性
 - 利用数学性质
+### 典型例题
+
+#### LeetCode 1 - 两数之和 (简单)
+- 哈希表法
+```java
+public int[] twoSum(int[] nums, int target) {
+    Map<Integer, Integer> map = new HashMap<>();
+    for (int i = 0; i < nums.length; i++) {
+        int complement = target - nums[i];
+        if (map.containsKey(complement)) {
+            return new int[] { map.get(complement), i };
+        }
+        map.put(nums[i], i);
+    }
+    throw new IllegalArgumentException("No two sum solution");
+}
+```
+
+#### LeetCode 15 - 三数之和 (中等)
+- 排序+双指针
+```java
+public List<List<Integer>> threeSum(int[] nums) {
+    List<List<Integer>> result = new ArrayList<>();
+    Arrays.sort(nums);
+    for (int i = 0; i < nums.length-2; i++) {
+        // 跳过重复值
+        if (i > 0 && nums[i] == nums[i-1]) continue;
+        int left = i+1, right = nums.length-1;
+        while (left < right) {
+            int sum = nums[i] + nums[left] + nums[right];
+            if (sum == 0) {
+                result.add(Arrays.asList(nums[i], nums[left], nums[right]));
+                while (left < right && nums[left] == nums[left+1]) left++;
+                while (left < right && nums[right] == nums[right-1]) right--;
+                left++;
+                right--;
+            } else if (sum < 0) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+    }
+    return result;
+}
+```
+
+#### LeetCode 4 - 寻找两个正序数组的中位数 (困难)
+- 二分查找
+```java
+public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+    if (nums1.length > nums2.length) {
+        return findMedianSortedArrays(nums2, nums1);
+    }
+    int m = nums1.length;
+    int n = nums2.length;
+    int halfLen = (m + n + 1) / 2;
+    int iMin = 0, iMax = m;
+    while (iMin <= iMax) {
+        int i = (iMin + iMax) / 2;
+        int j = halfLen - i;
+        if (i < iMax && nums2[j-1] > nums1[i]){
+            iMin = i + 1;
+        } else if (i > iMin && nums1[i-1] > nums2[j]) {
+            iMax = i - 1;
+        } else {
+            int maxLeft = 0;
+            if (i == 0) { maxLeft = nums2[j-1]; }
+            else if (j == 0) { maxLeft = nums1[i-1]; }
+            else { maxLeft = Math.max(nums1[i-1], nums2[j-1]); }
+            if ( (m + n) % 2 == 1 ) { return maxLeft; }
+
+            int minRight = 0;
+            if (i == m) { minRight = nums2[j]; }
+            else if (j == n) { minRight = nums1[i]; }
+            else { minRight = Math.min(nums1[i], nums2[j]); }
+
+            return (maxLeft + minRight) / 2.0;
+        }
+    }
+    throw new IllegalArgumentException();
+}
+```
 
 ### 3. 注意事项
 - 数组越界检查

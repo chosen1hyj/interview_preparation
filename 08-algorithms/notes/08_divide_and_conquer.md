@@ -73,6 +73,110 @@ T(n) = aT(n/b) + f(n)
 2. 不正确的划分方式
 3. 忘记合并结果
 4. 边界处理不当
+### 典型例题
+
+#### LeetCode 53 - 最大子序和 (简单)
+- 分治实现
+```java
+public int maxSubArray(int[] nums) {
+    return helper(nums, 0, nums.length - 1);
+}
+
+private int helper(int[] nums, int left, int right) {
+    if (left == right) return nums[left];
+    
+    int mid = left + (right - left) / 2;
+    
+    // 左半部分最大值
+    int leftMax = helper(nums, left, mid);
+    // 右半部分最大值
+    int rightMax = helper(nums, mid + 1, right);
+    // 跨越中间的最大值
+    int crossMax = crossSum(nums, left, right, mid);
+    
+    return Math.max(Math.max(leftMax, rightMax), crossMax);
+}
+
+private int crossSum(int[] nums, int left, int right, int mid) {
+    // 从中间向左扩展
+    int sum = 0;
+    int leftSum = Integer.MIN_VALUE;
+    for (int i = mid; i >= left; i--) {
+        sum += nums[i];
+        leftSum = Math.max(leftSum, sum);
+    }
+    
+    // 从中间向右扩展
+    sum = 0;
+    int rightSum = Integer.MIN_VALUE;
+    for (int i = mid + 1; i <= right; i++) {
+        sum += nums[i];
+        rightSum = Math.max(rightSum, sum);
+    }
+    
+    return leftSum + rightSum;
+}
+```
+
+#### LeetCode 912 - 排序数组 (中等)
+- 归并排序
+```java
+public int[] sortArray(int[] nums) {
+    if (nums.length < 2) return nums;
+    mergeSort(nums, 0, nums.length - 1);
+    return nums;
+}
+
+private void mergeSort(int[] nums, int left, int right) {
+    if (left >= right) return;
+    
+    int mid = left + (right - left) / 2;
+    mergeSort(nums, left, mid);
+    mergeSort(nums, mid + 1, right);
+    merge(nums, left, mid, right);
+}
+
+private void merge(int[] nums, int left, int mid, int right) {
+    int[] temp = new int[right - left + 1];
+    int i = left, j = mid + 1, k = 0;
+    
+    while (i <= mid && j <= right) {
+        temp[k++] = nums[i] < nums[j] ? nums[i++] : nums[j++];
+    }
+    
+    while (i <= mid) {
+        temp[k++] = nums[i++];
+    }
+    
+    while (j <= right) {
+        temp[k++] = nums[j++];
+    }
+    
+    System.arraycopy(temp, 0, nums, left, temp.length);
+}
+```
+
+#### LeetCode 50 - Pow(x, n) (中等)
+- 快速幂
+```java
+public double myPow(double x, int n) {
+    if (n == 0) return 1;
+    if (n < 0) {
+        x = 1 / x;
+        n = -n;
+    }
+    return fastPow(x, n);
+}
+
+private double fastPow(double x, long n) {
+    if (n == 0) return 1.0;
+    double half = fastPow(x, n / 2);
+    if (n % 2 == 0) {
+        return half * half;
+    } else {
+        return half * half * x;
+    }
+}
+```
 
 ## 总结
-分治算法虽然递归调用会带来额外开销，但其清晰的结构和可并行化的特性使其在解决许多复杂问题时非常有效。掌握其基本框架和优化技巧，可以应对各种复杂的算法设计问题。

@@ -220,6 +220,100 @@ public ListNode reverse(ListNode head) {
 - 掌握递归技巧
 - 注重边界处理
 - 画图帮助思考
+### 典型例题
+
+#### LeetCode 206 - 反转链表 (简单)
+- 迭代法
+```java
+public ListNode reverseList(ListNode head) {
+    ListNode prev = null;
+    ListNode curr = head;
+    while (curr != null) {
+        ListNode nextTemp = curr.next;
+        curr.next = prev;
+        prev = curr;
+        curr = nextTemp;
+    }
+    return prev;
+}
+```
+- 递归法
+```java
+public ListNode reverseList(ListNode head) {
+    if (head == null || head.next == null) return head;
+    ListNode p = reverseList(head.next);
+    head.next.next = head;
+    head.next = null;
+    return p;
+}
+```
+
+#### LeetCode 2 - 两数相加 (中等)
+- 链表模拟加法
+```java
+public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+    ListNode dummyHead = new ListNode(0);
+    ListNode p = l1, q = l2, curr = dummyHead;
+    int carry = 0;
+    while (p != null || q != null) {
+        int x = (p != null) ? p.val : 0;
+        int y = (q != null) ? q.val : 0;
+        int sum = carry + x + y;
+        carry = sum / 10;
+        curr.next = new ListNode(sum % 10);
+        curr = curr.next;
+        if (p != null) p = p.next;
+        if (q != null) q = q.next;
+    }
+    if (carry > 0) {
+        curr.next = new ListNode(carry);
+    }
+    return dummyHead.next;
+}
+```
+
+#### LeetCode 25 - K个一组翻转链表 (困难)
+- 分组反转
+```java
+public ListNode reverseKGroup(ListNode head, int k) {
+    ListNode dummy = new ListNode(0);
+    dummy.next = head;
+    
+    ListNode prevGroupEnd = dummy;
+    while (true) {
+        // 找到第k个节点
+        ListNode kthNode = getKthNode(prevGroupEnd, k);
+        if (kthNode == null) break;
+        
+        // 下一组起点
+        ListNode nextGroupStart = kthNode.next;
+        
+        // 反转当前组
+        ListNode prev = nextGroupStart;
+        ListNode curr = prevGroupEnd.next;
+        while (curr != nextGroupStart) {
+            ListNode next = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = next;
+        }
+        
+        // 连接反转后的组
+        ListNode oldStart = prevGroupEnd.next;
+        prevGroupEnd.next = kthNode;
+        prevGroupEnd = oldStart;
+    }
+    return dummy.next;
+}
+
+private ListNode getKthNode(ListNode start, int k) {
+    while (start != null && k > 0) {
+        start = start.next;
+        k--;
+    }
+    return start;
+}
+```
 
 ### 4. 练习顺序
 1. 基本操作题

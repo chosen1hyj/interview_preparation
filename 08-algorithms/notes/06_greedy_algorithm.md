@@ -197,9 +197,61 @@ Arrays.sort(intervals, (a, b) -> a[1] - b[1]);  // 按终点
 - 手动模拟过程
 - 举反例验证
 - 考虑边界情况
+### 典型例题
+
+#### LeetCode 455 - 分发饼干 (简单)
+- 贪心匹配
+```java
+public int findContentChildren(int[] g, int[] s) {
+    Arrays.sort(g);
+    Arrays.sort(s);
+    
+    int i = 0, j = 0;
+    while (i < g.length && j < s.length) {
+        if (s[j] >= g[i]) {
+            i++;
+        }
+        j++;
+    }
+    return i;
+}
+```
+
+#### LeetCode 55 - 跳跃游戏 (中等)
+- 最远可达位置
+```java
+public boolean canJump(int[] nums) {
+    int maxReach = 0;
+    for (int i = 0; i < nums.length; i++) {
+        if (i > maxReach) return false;
+        maxReach = Math.max(maxReach, i + nums[i]);
+        if (maxReach >= nums.length - 1) return true;
+    }
+    return false;
+}
+```
+
+#### LeetCode 435 - 无重叠区间 (困难)
+- 区间调度
+```java
+public int eraseOverlapIntervals(int[][] intervals) {
+    if (intervals.length == 0) return 0;
+    
+    // 按结束时间排序
+    Arrays.sort(intervals, (a, b) -> a[1] - b[1]);
+    
+    int count = 1;  // 至少保留一个区间
+    int end = intervals[0][1];
+    
+    for (int i = 1; i < intervals.length; i++) {
+        if (intervals[i][0] >= end) {
+            count++;
+            end = intervals[i][1];
+        }
+    }
+    
+    return intervals.length - count;
+}
+```
 
 ### 4. 注意事项
-- 证明贪心策略的正确性
-- 处理好特殊情况
-- 注意性能优化
-- 代码的简洁性

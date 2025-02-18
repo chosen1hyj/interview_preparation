@@ -198,9 +198,73 @@ return dp[n];
 2. 写出转移方程
 3. 确定边界条件
 4. 考虑优化方案
+### 典型例题
+
+#### LeetCode 70 - 爬楼梯 (简单)
+- 斐波那契数列
+```java
+public int climbStairs(int n) {
+    if (n <= 2) return n;
+    int prev = 1, curr = 2;
+    for (int i = 3; i <= n; i++) {
+        int temp = curr;
+        curr += prev;
+        prev = temp;
+    }
+    return curr;
+}
+```
+
+#### LeetCode 300 - 最长递增子序列 (中等)
+- 二分查找优化
+```java
+public int lengthOfLIS(int[] nums) {
+    int[] tails = new int[nums.length];
+    int size = 0;
+    for (int x : nums) {
+        int i = 0, j = size;
+        while (i != j) {
+            int m = (i + j) / 2;
+            if (tails[m] < x)
+                i = m + 1;
+            else
+                j = m;
+        }
+        tails[i] = x;
+        if (i == size) ++size;
+    }
+    return size;
+}
+```
+
+#### LeetCode 72 - 编辑距离 (困难)
+- 双字符串DP
+```java
+public int minDistance(String word1, String word2) {
+    int m = word1.length(), n = word2.length();
+    int[][] dp = new int[m+1][n+1];
+    
+    // 初始化边界
+    for (int i = 0; i <= m; i++) {
+        dp[i][0] = i;
+    }
+    for (int j = 0; j <= n; j++) {
+        dp[0][j] = j;
+    }
+    
+    // 状态转移
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (word1.charAt(i-1) == word2.charAt(j-1)) {
+                dp[i][j] = dp[i-1][j-1];
+            } else {
+                dp[i][j] = Math.min(dp[i-1][j-1], 
+                            Math.min(dp[i-1][j], dp[i][j-1])) + 1;
+            }
+        }
+    }
+    return dp[m][n];
+}
+```
 
 ### 3. 提高方法
-- 多做题积累经验
-- 总结常见模式
-- 注意空间时间权衡
-- 练习代码实现

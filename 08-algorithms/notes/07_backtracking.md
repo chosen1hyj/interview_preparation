@@ -73,6 +73,96 @@ public void backtrack(路径, 选择列表) {
 2. 错误的状态维护
 3. 不完整的约束检查
 4. 边界条件处理不当
+### 典型例题
+
+#### LeetCode 78 - 子集 (简单)
+- 组合生成
+```java
+public List<List<Integer>> subsets(int[] nums) {
+    List<List<Integer>> result = new ArrayList<>();
+    backtrack(nums, 0, new ArrayList<>(), result);
+    return result;
+}
+
+private void backtrack(int[] nums, int start, List<Integer> path, 
+                       List<List<Integer>> result) {
+    result.add(new ArrayList<>(path));
+    
+    for (int i = start; i < nums.length; i++) {
+        path.add(nums[i]);
+        backtrack(nums, i + 1, path, result);
+        path.remove(path.size() - 1);
+    }
+}
+```
+
+#### LeetCode 39 - 组合总和 (中等)
+- 数字组合
+```java
+public List<List<Integer>> combinationSum(int[] candidates, int target) {
+    List<List<Integer>> result = new ArrayList<>();
+    Arrays.sort(candidates);
+    backtrack(candidates, target, 0, new ArrayList<>(), result);
+    return result;
+}
+
+private void backtrack(int[] candidates, int remain, int start, 
+                       List<Integer> path, List<List<Integer>> result) {
+    if (remain == 0) {
+        result.add(new ArrayList<>(path));
+        return;
+    }
+    
+    for (int i = start; i < candidates.length; i++) {
+        if (candidates[i] > remain) break;
+        
+        path.add(candidates[i]);
+        backtrack(candidates, remain - candidates[i], i, path, result);
+        path.remove(path.size() - 1);
+    }
+}
+```
+
+#### LeetCode 37 - 解数独 (困难)
+- 约束满足
+```java
+public void solveSudoku(char[][] board) {
+    solve(board);
+}
+
+private boolean solve(char[][] board) {
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            if (board[i][j] != '.') continue;
+            
+            for (char c = '1'; c <= '9'; c++) {
+                if (isValid(board, i, j, c)) {
+                    board[i][j] = c;
+                    
+                    if (solve(board)) return true;
+                    
+                    board[i][j] = '.';
+                }
+            }
+            return false;
+        }
+    }
+    return true;
+}
+
+private boolean isValid(char[][] board, int row, int col, char c) {
+    for (int i = 0; i < 9; i++) {
+        // 检查行
+        if (board[i][col] == c) return false;
+        // 检查列
+        if (board[row][i] == c) return false;
+        // 检查3x3子方块
+        int boxRow = 3 * (row / 3) + i / 3;
+        int boxCol = 3 * (col / 3) + i % 3;
+        if (board[boxRow][boxCol] == c) return false;
+    }
+    return true;
+}
+```
 
 ## 总结
-回溯算法虽然时间复杂度较高，但其系统化的搜索方式使其在解决许多NP完全问题时非常有效。掌握其基本框架和优化技巧，可以应对各种复杂的组合优化问题。
