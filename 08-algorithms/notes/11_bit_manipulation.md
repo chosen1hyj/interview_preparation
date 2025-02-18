@@ -60,9 +60,30 @@ int countOnes(int num) {
 }
 ```
 
-## 实战应用
+## 高级应用
 
-### 1. 位掩码
+### 1. 算法优化
+- 使用位运算代替乘除
+- 状态压缩DP
+- Bitset优化
+
+### 2. 位掩码
+```java
+// 使用位掩码表示集合
+int[] masks = new int[1 << n];
+for (int i = 0; i < (1 << n); i++) {
+    // i 的二进制表示子集
+}
+
+// 应用示例：统计子集数量
+int countSubsets(int[] nums) {
+    int n = nums.length;
+    int total = 1 << n; // 2^n个子集
+    return total;
+}
+```
+
+### 3. 状态压缩
 ```java
 // 使用位掩码表示集合
 int[] masks = new int[1 << n];
@@ -92,12 +113,24 @@ int divideByPowerOfTwo(int num, int power) {
 }
 ```
 
+## 常见面试题型
+
+### 1. 数字操作
+- 计算二进制中1的个数
+- 判断是否为2的幂
+- 找出唯一出现的数字
+
+### 2. 算法优化
+- 不使用加减乘除实现计算器
+- 位运算分治算法
+- 状态压缩动态规划
+
 ## 注意事项
 
-### 1. 边界处理
-- 负数处理
+### 1. 边界条件
+- Integer.MIN_VALUE 特殊处理
+- 负数右移补位问题
 - 溢出判断
-- 符号位影响
 
 ### 2. 性能优化
 - 替代乘除运算
