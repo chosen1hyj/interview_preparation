@@ -163,7 +163,108 @@ public int[] buildNext(String pattern) {
    - 正则表达式
    - 字符串搜索
 
-## 面试要点
+## 字符串处理
+
+### 基本操作
+- 子串查找：KMP算法、Boyer-Moore算法
+- 字符串匹配：正则表达式
+- 字符串转换：大小写转换、数字与字符串互转
+
+### 典型例题
+
+#### LeetCode 5 - 最长回文子串 (中等)
+- 中心扩展法
+- 动态规划
+- Manacher算法
+
+```java
+// 中心扩展法实现
+public String longestPalindrome(String s) {
+    if (s == null || s.length() < 1) return "";
+    int start = 0, end = 0;
+    for (int i = 0; i < s.length(); i++) {
+        int len1 = expandAroundCenter(s, i, i);
+        int len2 = expandAroundCenter(s, i, i + 1);
+        int len = Math.max(len1, len2);
+        if (len > end - start) {
+            start = i - (len - 1) / 2;
+            end = i + len / 2;
+        }
+    }
+    return s.substring(start, end + 1);
+}
+
+private int expandAroundCenter(String s, int left, int right) {
+    while (left >= 0 && right < s.length() && s.charAt(left) == s.charAt(right)) {
+        left--;
+        right++;
+    }
+    return right - left - 1;
+}
+```
+
+#### LeetCode 10 - 正则表达式匹配 (困难)
+- 动态规划
+- 回溯法
+
+```java
+// 动态规划实现
+public boolean isMatch(String s, String p) {
+    int m = s.length(), n = p.length();
+    boolean[][] dp = new boolean[m+1][n+1];
+    dp[0][0] = true;
+    
+    // 初始化首行
+    for (int j = 2; j <= n; j++) {
+        dp[0][j] = p.charAt(j-1) == '*' && dp[0][j-2];
+    }
+    
+    // 填充表格
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            char sc = s.charAt(i-1), pc = p.charAt(j-1);
+            if (pc == '.' || pc == sc) {
+                dp[i][j] = dp[i-1][j-1];
+            } else if (pc == '*') {
+                char prev = p.charAt(j-2);
+                boolean zero = dp[i][j-2]; // 匹配0个
+                boolean oneOrMore = (prev == '.' || prev == sc) && dp[i-1][j];
+                dp[i][j] = zero || oneOrMore;
+            }
+        }
+    }
+    return dp[m][n];
+}
+```
+
+### 解题模板
+
+#### KMP算法模板
+```java
+public int[] computeLPS(String pattern) {
+    int n = pattern.length();
+    int[] lps = new int[n];
+    int len = 0;
+    int i = 1;
+    while (i < n) {
+        if (pattern.charAt(i) == pattern.charAt(len)) {
+            len++;
+            lps[i] = len;
+            i++;
+        } else {
+            if (len != 0) {
+                len = lps[len-1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+    return lps;
+}
+
+public int kmpSearch(String text, String pattern) {
+    int[] lps = computeLPS(pattern);
 
 ### 1. 常见优化方向
 - 使用额外空间换取时间效率

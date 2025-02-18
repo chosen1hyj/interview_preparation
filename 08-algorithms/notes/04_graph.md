@@ -339,96 +339,162 @@ public class KosarajuSCC {
 }
 ```
 
+## 典型算法实现
+
+### 1. Prim算法（最小生成树）
+```java
+public class PrimMST {
+    public List<int[]> primMST(int[][] graph) {
+        int V = graph.length;
+        boolean[] inMST = new boolean[V];
+        int[] key = new int[V];
+        int[] parent = new int[V];
+        Arrays.fill(key, Integer.MAX_VALUE);
+        
+        // 从顶点0开始
+        key[0] = 0;
+        parent[0] = -1;
+        
+        for (int count = 0; count < V - 1; count++) {
+            // 找到最小key值的顶点
+            int u = getMinKeyVertex(key, inMST);
+            inMST[u] = true;
+            
+            // 更新相邻顶点
+            for (int v = 0; v < V; v++) {
+                if (graph[u][v] != 0 && !inMST[v] &&
+                    graph[u][v] < key[v]) {
+                    parent[v] = u;
+                    key[v] = graph[u][v];
+                }
+            }
+        }
+        
+        // 构建结果
+        List<int[]> mst = new ArrayList<>();
+        for (int i = 1; i < V; i++) {
+            mst.add(new int[]{parent[i], i, graph[i][parent[i]]});
+        }
+        return mst;
+    }
+    
+    private int getMinKeyVertex(int[] key, boolean[] inMST) {
+        int min = Integer.MAX_VALUE, minIndex = -1;
+        for (int v = 0; v < key.length; v++) {
+            if (!inMST[v] && key[v] < min) {
+                min = key[v];
+                minIndex = v;
+            }
+        }
+        return minIndex;
+    }
+}
+```
+
+时间复杂度：O(V²)
+空间复杂度：O(V)
+
+### 2. Bellman-Ford算法（单源最短路径）
+```java
+public class BellmanFord {
+    public int[] bellmanFord(int[][] edges, int V, int start) {
+        int[] dist = new int[V];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        dist[start] = 0;
+        
+        // 松弛V-1次
+        for (int i = 0; i < V - 1; i++) {
+            for (int[] edge : edges) {
+                int src = edge[0], dest = edge[1], weight = edge[2];
+                if (dist[src] != Integer.MAX_VALUE &&
+                    dist[src] + weight < dist[dest]) {
+                    dist[dest] = dist[src] + weight;
+                }
+            }
+        }
+        
+        // 检查负权环
+        for (int[] edge : edges) {
+            int src = edge[0], dest = edge[1], weight = edge[2];
+            if (dist[src] != Integer.MAX_VALUE &&
+                dist[src] + weight < dist[dest]) {
+                throw new RuntimeException("Graph contains negative weight cycle");
+            }
+        }
+        
+        return dist;
+    }
+}
+```
+
+时间复杂度：O(VE)
+空间复杂度：O(V)
+
+## 典型例题
+
+### LeetCode 207 - 课程表 (中等)
+- 拓扑排序判断有向图是否有环
+- 使用DFS或BFS实现拓扑排序
+- 关键点：入度数组、邻接表
+
+```java
+// 示例代码片段
+public boolean canFinish(int numCourses, int[][] prerequisites) {
+    int[] inDegree = new int[numCourses];
+    List<List<Integer>> adj = new ArrayList<>();
+    for (int i = 0; i < numCourses; i++) {
+        adj.add(new ArrayList<>());
+    }
+    for (int[] p : prerequisites) {
+        adj.get(p[1]).add(p[0]);
+        inDegree[p[0]]++;
+    }
+    
+    Queue<Integer> queue = new LinkedList<>();
+    for (int i = 0; i < numCourses; i++) {
+        if (inDegree[i] == 0) queue.offer(i);
+    }
+    
+    int count = 0;
+    while (!queue.isEmpty()) {
+        int course = queue.poll();
+        count++;
+        for (int next : adj.get(course)) {
+            if (--inDegree[next] == 0) {
+                queue.offer(next);
+            }
+        }
+    }
+    return count == numCourses;
+}
+```
+
 ## 常见问题类型
 
 ### 1. 图的遍历类
-- DFS应用
-- BFS应用
-- 拓扑排序
+- DFS应用：连通分量、路径查找、环检测
+- BFS应用：最短路径、层序遍历
+- 拓扑排序：课程表问题、任务调度
 
 ### 2. 最短路径类
-- 单源最短路径
-- 所有点对最短路径
-- 特定条件下的路径问题
+- 单源最短路径：Dijkstra算法
+- 所有点对最短路径：Floyd-Warshall算法
+- 带限制的最短路径：Bellman-Ford算法
 
 ### 3. 连通性问题
-- 强连通分量
-- 割点和桥
-- 二分图判定
+- 强连通分量：Kosaraju算法
+- 割点和桥：Tarjan算法
+- 二分图判定：染色法
 
-### 4. 环相关
-- 环的检测
-- 最小环
-- 欧拉回路
+### 4. 环相关问题
+- 环的检测：DFS/BFS
+- 最小环：Floyd-Warshall变种
+- 欧拉回路：Hierholzer算法
 
-## 解题技巧
+### 5. 最小生成树
+- Kruskal算法
+- Prim算法
 
-### 1. 建图技巧
-- 选择合适的图表示方法
-- 处理边的方向性
-- 处理权重信息
-
-### 2. 搜索优化
-- 剪枝
-- 记忆化
-- 双向搜索
-
-### 3. 特殊图处理
-- 二分图
-- 树形图
-- 有向无环图(DAG)
-
-## 常见错误
-
-### 1. 访问标记
-- 忘记标记已访问节点
-- 忘记重置访问状态
-- 访问标记的时机不当
-
-### 2. 边界条件
-- 图为空
-- 只有一个节点
-- 存在自环或重边
-
-### 3. 算法选择
-- 使用不适合的算法
-- 忽略图的特性
-- 效率考虑不周
-
-## 面试技巧
-
-### 1. 分析问题
-- 确定图的类型
-- 识别问题特点
-- 选择合适算法
-
-### 2. 代码实现
-- 模块化编程
-- 清晰的变量命名
-- 注释关键步骤
-
-### 3. 优化方向
-- 时间复杂度优化
-- 空间复杂度优化
-- 代码简洁性
-
-## 实战建议
-
-### 1. 练习顺序
-1. 图的表示和遍历
-2. 最短路径问题
-3. 拓扑排序
-4. 连通性问题
-5. 复杂图算法
-
-### 2. 重点掌握
-- DFS和BFS的应用
-- Dijkstra算法
-- 拓扑排序
-- 并查集操作
-
-### 3. 进阶方向
-- 网络流
-- 二分图匹配
-- 欧拉图和哈密顿图
-- 平面图算法
+### 6. 网络流问题
+- 最大流：Ford-Fulkerson方法
+- 最小割
