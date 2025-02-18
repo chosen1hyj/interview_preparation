@@ -77,17 +77,23 @@
 ### 状态转换
 ```java
 Thread thread = new Thread(() -> {
-    // NEW -> RUNNABLE
+    System.out.println("线程开始执行 - NEW -> RUNNABLE");
     try {
         Thread.sleep(1000); // RUNNABLE -> TIMED_WAITING
+        System.out.println("线程从 TIMED_WAITING 恢复到 RUNNABLE");
     } catch (InterruptedException e) {
+        System.out.println("线程被中断");
         e.printStackTrace();
     }
     synchronized (lock) {
-        // 可能 RUNNABLE -> BLOCKED
+        System.out.println("线程尝试获取锁 - 可能 RUNNABLE -> BLOCKED");
     }
-    // 最终 -> TERMINATED
+    System.out.println("线程执行结束 - 进入 TERMINATED");
 });
+
+System.out.println("线程初始状态: " + thread.getState()); // NEW
+thread.start(); // 启动线程
+System.out.println("线程启动后状态: " + thread.getState()); // RUNNABLE
 ```
 
 ## 上下文切换
